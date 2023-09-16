@@ -2,12 +2,15 @@
 
 import base64
 import json
+import os
 import secrets
 import smtplib
+import subprocess
 import sys
 from email.message import EmailMessage
 from getpass import getpass
 from pathlib import Path
+from tempfile import mkstemp
 
 from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.primitives import hashes
@@ -16,6 +19,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 BASE_DIR = Path(__file__).resolve().parent
 SETTINGS_PATH = BASE_DIR / "settings.json"
+TMP_FILE_NAME_PREFIX = "heraud-tmp-"
 
 KDF_ITERS = 1_000_000
 
@@ -53,6 +57,7 @@ def derive_key(password, salt_bytes):
 
 def set_up():
     print("Configuring Heraud. Please input the following required settings.")
+
     settings["from_address"] = input(
         "From address (format: `Name <user@example.com>`): "
     )
@@ -91,25 +96,52 @@ def unlock_smtp_pw():
         sys.exit()
 
 
+def compose_in_notepad(initial_text=""):
+    file_desc, file_name = mkstemp(
+        prefix=TMP_FILE_NAME_PREFIX,
+        suffix=".txt",
+        text=True,
+    )
+    file = os.fdopen(file_desc, "w")
+    file.write(initial_text)
+    file.close()
+    try:
+        subprocess.run(["notepad", file_name], check=True)
+        with Path(file_name).open("r", encoding="utf-8") as file:
+            text = file.read()
+    finally:
+        Path(file_name).unlink()
+
+    return text
+
+
 def send_mail():
     msg = EmailMessage()
     msg["From"] = settings["from_address"]
     msg["To"] = input("To address (format: `Name <user@example.com>`): ")
     msg["Subject"] = input("Subject: ")
-    msg.set_content(input("Body: "))  # TODO: use external editor?
+
+    print("Opening and waiting for editor...")
+    body = compose_in_notepad(initial_text="<Replace this with email message>")
+    msg.set_content(body)
+
+    print("You have entered the following message:\n")
+    print(body)
+    proceed = input("\nType `y` to send; type anything else to cancel: ")
+    if proceed != "y":
+        print("Cancelled.")
+        return False
 
     print("Connecting and sending...")
-
     smtp = smtplib.SMTP(settings["smtp_host"], port=settings["smtp_port"])
     smtp.starttls()
     smtp.login(settings["smtp_user"], settings["smtp_pw"])
     smtp.send_message(msg)
     smtp.quit()
-
     print("Done.")
 
 
-def main():
+if __name__ == "__main__":
     try:
         if not retrieve_settings():
             set_up()
@@ -121,7 +153,3 @@ def main():
         send_mail()
     except KeyboardInterrupt:
         print("\nExiting.")
-
-
-if __name__ == "__main__":
-    main()
