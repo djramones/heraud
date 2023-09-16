@@ -61,10 +61,10 @@ def set_up():
     settings["smtp_user"] = input("SMTP user: ")
 
     smtp_pw = getpass("SMTP password: ")
-    password = getpass("Encryption password: ")
+    pin = getpass("Set PIN: ")
 
     salt_bytes = secrets.token_bytes(nbytes=16)
-    key = derive_key(password, salt_bytes)
+    key = derive_key(pin, salt_bytes)
     fernet = Fernet(key)
     token_b64bytes = fernet.encrypt(smtp_pw.encode())
     salt_b64bytes = base64.urlsafe_b64encode(salt_bytes)
@@ -79,15 +79,15 @@ def set_up():
 
 
 def unlock_smtp_pw():
-    password = getpass("Decryption password: ")
+    pin = getpass("Enter PIN: ")
     salt_bytes = base64.urlsafe_b64decode(settings["salt"])
-    key = derive_key(password, salt_bytes)
+    key = derive_key(pin, salt_bytes)
     fernet = Fernet(key)
     try:
         smtp_pw_bytes = fernet.decrypt(settings["smtp_pw_encrypted"].encode())
         settings["smtp_pw"] = smtp_pw_bytes.decode()
     except InvalidToken:
-        print("Invalid token error. The decryption password could be wrong.")
+        print("Invalid token error. The PIN might be wrong.")
         sys.exit()
 
 
