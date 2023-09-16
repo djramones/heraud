@@ -91,10 +91,10 @@ def unlock_smtp_pw():
     fernet = Fernet(key)
     try:
         smtp_pw_bytes = fernet.decrypt(settings["smtp_pw_encrypted"].encode())
-        settings["smtp_pw"] = smtp_pw_bytes.decode()
     except InvalidToken:
         print("Invalid token error. The PIN might be wrong.")
         sys.exit()
+    settings["smtp_pw"] = smtp_pw_bytes.decode()
 
 
 def compose_in_notepad(initial_text=""):
