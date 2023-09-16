@@ -12,7 +12,7 @@ It’s a convenience tool you might find neat if, for example, you have an accou
 
 ## Requirements
 
-This tool is for Windows (tested with Windows 11). It assumes that the `py` launcher is available, as it uses a shebang line (that the launcher [enables on Windows](https://docs.python.org/3/using/windows.html#shebang-lines)) to run in a virtual environment. The shebang line in turns assumes that the virtual environment is installed in a `venv` directory next to `heraud.py` (e.g., created with `py -m venv venv`). The virtual environment is to be populated with `pip install -r requirements-lock.txt`. (For an explanation of the `requirements*.txt` files, see “[A lightweight pip workflow](https://tech.reversedelay.net/2023/07/a-lightweight-python-pip-workflow/)”.)
+This tool is for Windows (tested with Windows 11). It assumes that the `py` launcher is available, as it uses a shebang line (that the launcher [enables on Windows](https://docs.python.org/3/using/windows.html#shebang-lines)) to run in a virtual environment. The shebang line in turn assumes that the virtual environment is installed in a `venv` directory next to `heraud.py` (e.g., created with `py -m venv venv`). The virtual environment is to be populated with `pip install -r requirements-lock.txt`. (For an explanation of the `requirements*.txt` files, see “[A lightweight pip workflow](https://tech.reversedelay.net/2023/07/a-lightweight-python-pip-workflow/)”.)
 
 Of course, if you’re the type to actually use this tool, you can ignore all that and use the script your way. You’ll probably want to keep the `cryptography` dependency up-to-date, for instance.
 
