@@ -25,6 +25,7 @@ KDF_ITERS = 1_000_000
 
 settings = {
     "from_address": "",
+    "default_bcc": "",
     "smtp_host": "",
     "smtp_port": 587,
     "smtp_user": "",
@@ -61,6 +62,7 @@ def set_up():
     settings["from_address"] = input(
         "From address (format: `Name <user@example.com>`): "
     )
+    settings["default_bcc"] = input("Default BCC recipient (can be blank): ")
     settings["smtp_host"] = input("SMTP host: ")
     settings["smtp_port"] = int(input("SMTP port: "))
     settings["smtp_user"] = input("SMTP user: ")
@@ -73,7 +75,6 @@ def set_up():
     fernet = Fernet(key)
     token_b64bytes = fernet.encrypt(smtp_pw.encode())
     salt_b64bytes = base64.urlsafe_b64encode(salt_bytes)
-
     settings["smtp_pw_encrypted"] = token_b64bytes.decode()
     settings["salt"] = salt_b64bytes.decode()
 
@@ -119,6 +120,16 @@ def send_mail():
     msg = EmailMessage()
     msg["From"] = settings["from_address"]
     msg["To"] = input("To address (format: `Name <user@example.com>`): ")
+    if settings["default_bcc"]:
+        use_default_bcc = input(
+            f"Add {settings['default_bcc']} to BCC?\n"
+            "  Type `y` to add, or anything else to skip: "
+        )
+        if use_default_bcc == "y":
+            msg["Bcc"] = settings["default_bcc"]
+            print("BCC added.")
+        else:
+            print("BCC skipped.")
     msg["Subject"] = input("Subject: ")
 
     print("Opening and waiting for editor...")
