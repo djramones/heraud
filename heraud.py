@@ -98,21 +98,15 @@ def unlock_smtp_pw():
 
 
 def compose_in_notepad(initial_text=""):
-    file_desc, file_name = mkstemp(
-        prefix=TMP_FILE_NAME_PREFIX,
-        suffix=".txt",
-        text=True,
-    )
-    file = os.fdopen(file_desc, "w")
-    file.write(initial_text)
-    file.close()
+    file_desc, file_name = mkstemp(prefix=TMP_FILE_NAME_PREFIX, suffix=".txt")
+    with os.fdopen(file_desc, "w") as file:
+        file.write(initial_text)
     try:
         subprocess.run(["notepad", file_name], check=True)
         with Path(file_name).open("r", encoding="utf-8") as file:
             text = file.read()
     finally:
         Path(file_name).unlink()
-
     return text
 
 
