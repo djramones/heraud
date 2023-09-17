@@ -1,4 +1,4 @@
-#!venv/Scripts/python
+#! venv/Scripts/python
 
 import base64
 import json
@@ -13,15 +13,12 @@ from pathlib import Path
 from tempfile import mkstemp
 
 from cryptography.fernet import Fernet, InvalidToken
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
 
 
 BASE_DIR = Path(__file__).resolve().parent
 SETTINGS_PATH = BASE_DIR / "settings.json"
 TMP_FILE_NAME_PREFIX = "heraud-tmp-"
-
-KDF_ITERS = 1_000_000
 
 settings = {
     "from_address": "",
@@ -46,12 +43,7 @@ def retrieve_settings():
 
 def derive_key(password, salt_bytes):
     password_bytes = password.encode()
-    kdf = PBKDF2HMAC(
-        algorithm=hashes.SHA256(),
-        length=32,
-        salt=salt_bytes,
-        iterations=KDF_ITERS,
-    )
+    kdf = Scrypt(length=32, salt=salt_bytes, n=2**19, r=8, p=1)
     key = base64.urlsafe_b64encode(kdf.derive(password_bytes))
     return key
 
